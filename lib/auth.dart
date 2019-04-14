@@ -75,14 +75,6 @@ class Auth implements BaseAuth{
 //Sign's out of Google and Firebase
   @override
   Future<void> signOut() async{
-    if(_gUser.email == null){
-      print("if log out");
-      return _firebaseAuth.signOut();
-    }
-    else{
-      print("else log out");
-      _user.signOut();
-      _firebaseAuth.signOut();
-    }
+    _firebaseAuth.signOut();
   }
 }

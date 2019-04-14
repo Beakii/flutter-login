@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import './random_word.dart';
 import 'auth_provider.dart';
+import 'package:firebase_database/firebase_database.dart';
 
 class ListPage extends StatefulWidget {
   @override
@@ -17,6 +18,7 @@ class _ListPageState extends State<ListPage> {
   final List wordList = RandomWords().fillList();
   final List _favList = List<String>();
   ListType _listType = ListType.random;
+  final DatabaseReference database = FirebaseDatabase.instance.reference().child("RandomWords");
   var auth;
 
   @override
@@ -31,6 +33,7 @@ class _ListPageState extends State<ListPage> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      theme: Theme.of(context),
       home: Scaffold(
         appBar: AppBar(
           title:  titleChecker(),
@@ -100,7 +103,11 @@ class _ListPageState extends State<ListPage> {
           setState(() {
            _listType = ListType.random; 
           });
-        },)
+        },),
+        IconButton(
+          icon: Icon(Icons.exit_to_app),
+          onPressed: () => _signOut(context)
+        )
       ];
     }
   }
@@ -110,6 +117,12 @@ class _ListPageState extends State<ListPage> {
 //Called from listGenerator methods to generate ListTiles based on the current ListType state.
   Widget listTypeChecker(int i){
     final bool isSaved = _favList.contains(wordList[i]);
+
+//SEND WORDS TO DATABSE//////////////////////////////////////////////////////////////////////////////////////////////////
+    // database.push().set({
+    //   'randomWords' : '${wordList[i]}'
+    // });
+//SEND WORDS TO DATABSE//////////////////////////////////////////////////////////////////////////////////////////////////
 
     if(_listType == ListType.random){
       return ListTile(
@@ -148,11 +161,11 @@ class _ListPageState extends State<ListPage> {
 //Called from Scaffold, body property to check listType state.
   Widget randomWordPopulator(){
     return ListView.builder(
+      itemCount: 50,
       itemBuilder: (BuildContext context, int i){
         if(i.isOdd){
           return Divider();
         }
-
         return listTypeChecker(i);
       },
     );

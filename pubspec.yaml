@@ -27,6 +27,7 @@ dependencies:
   firebase_auth: ^0.8.4+2
   flutter_signin_button: ^0.2.8
   english_words: ^3.1.5
+  firebase_database: ^2.0.3
 
 dev_dependencies:
   flutter_test:
