@@ -1,19 +1,10 @@
 import 'package:flutter/material.dart';
-import 'auth.dart';
+//import 'auth.dart';
+import 'auth_provider.dart';
 import 'package:flutter_signin_button/flutter_signin_button.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
-  GoogleSignIn _googleSignin = GoogleSignIn(
-    scopes: <String>[
-      'email', 
-      'https://www.googleapis.com/auth/contacts.readonly'
-    ]
-  );
-
 class LoginPage extends StatefulWidget {
-  LoginPage({this.auth});
-  final BaseAuth auth;
-
   @override
   _LoginPageState createState() => _LoginPageState();
 }
@@ -64,30 +55,40 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  formSubmit() async {
+  void formSubmit() async {
     if(formSave()){
       try{
+        var auth = AuthProvider.of(context).auth;
         if(_formType == FormType.login){
-          String user = await widget.auth.signInWithEmailAndPassword(_email, _password);
+          String user = await auth.signInWithEmailAndPassword(_email, _password);
           print(user);
         }
         else{
-          String user = await widget.auth.createUserWithEmailAndPassword(_email, _password);
+          String user = await auth.createUserWithEmailAndPassword(_email, _password);
           print(user);
         }
       }
       catch (e){
         buildErrorDialog(e);
+        print(e);
       }
     }
   }
 
-    Future googleFormSubmit() async {
+    void googleFormSubmit() async {
     try{
-      await widget.auth.signInWithGoogle(_googleSignin);
+      final auth = AuthProvider.of(context).auth;
+        GoogleSignIn _googleSignin = GoogleSignIn(
+          scopes: <String>[
+            'email', 
+            'https://www.googleapis.com/auth/contacts.readonly'
+          ]
+        );
+      await auth.signInWithGoogle(_googleSignin);
     }
     catch (e){
       buildErrorDialog(e);
+      print(e);
     }
   }
 

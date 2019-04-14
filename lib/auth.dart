@@ -4,12 +4,14 @@ import 'package:google_sign_in/google_sign_in.dart';
 //Global Variable Storeage for GoogleSignIn's
 GoogleSignIn _user;
 GoogleSignInAccount _gUser;
+FirebaseUser loggedInUser;
 
 //Abstracting the Auth class to allow for use of these methods in other .dart files.
 abstract class BaseAuth{
+  Stream<String> get onAuthStateChanged;
   Future<String> signInWithEmailAndPassword(String email, String password);
   Future<String> createUserWithEmailAndPassword(String email, String password);
-  Future<void>signInWithGoogle(GoogleSignIn info);
+  Future<String> signInWithGoogle(GoogleSignIn info);
   Future<String> currentUser();
   Future<void> signOut();
 }
@@ -19,20 +21,30 @@ class Auth implements BaseAuth{
 
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
 
+  @override
+  Stream<String> get onAuthStateChanged{
+    return _firebaseAuth.onAuthStateChanged.map((user) => user?.uid);
+  }
+
 //Firebase SignIn with Email/Password
+  @override
   Future<String> signInWithEmailAndPassword(String email, String password) async {
     FirebaseUser user = await _firebaseAuth.signInWithEmailAndPassword(email: email, password: password);
+    loggedInUser = user;
     return user.uid;
   }
 
 //Firebase Create-user with Email/Password
+  @override
   Future<String> createUserWithEmailAndPassword(String email, String password) async {
     FirebaseUser user = await _firebaseAuth.createUserWithEmailAndPassword(email: email, password: password);
+    loggedInUser = user;
     return user.uid;
   }
 
 //Google SignIn through Firebase
 //Must use FirebaseAuth.instance.signInWithCredentials
+  @override
   Future<String> signInWithGoogle(GoogleSignIn info) async{
     _user = info;
     _gUser = await info.signIn();
@@ -50,17 +62,27 @@ class Auth implements BaseAuth{
 
     final FirebaseUser currentUser = await _firebaseAuth.currentUser();
     assert(fbUser.uid == currentUser.uid);
+    return _gUser.id;
   }
 
 //Returns the current logged in user
+  @override
   Future<String> currentUser() async{
     FirebaseUser user = await _firebaseAuth.currentUser();
     return user.uid;
   }
 
 //Sign's out of Google and Firebase
+  @override
   Future<void> signOut() async{
-    _user.signOut();
-    return _firebaseAuth.signOut();
+    if(_gUser.email == null){
+      print("if log out");
+      return _firebaseAuth.signOut();
+    }
+    else{
+      print("else log out");
+      _user.signOut();
+      _firebaseAuth.signOut();
+    }
   }
 }
